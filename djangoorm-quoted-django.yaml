@@ -1,0 +1,139 @@
+rules:
+  - id: djangoorm-quoted-django
+    message: Untrusted input might be used to build a database query, which can lead
+      to a SQL injection vulnerability. An attacker can execute malicious SQL
+      statements and gain unauthorized access to sensitive data, modify, delete
+      data, or execute arbitrary system commands. Do not quote placeholders in
+      the SQL string. Use `%s` instead of `'%s'`.
+    severity: WARNING
+    metadata:
+      likelihood: LOW
+      impact: HIGH
+      confidence: LOW
+      category: security
+      subcategory:
+        - audit
+      cwe:
+        - "CWE-89: Improper Neutralization of Special Elements used in an SQL
+          Command ('SQL Injection')"
+      cwe2020-top25: true
+      cwe2021-top25: true
+      cwe2022-top25: true
+      display-name: SQL Injection in Django ORM
+      functional-categories:
+        - db::sink::sql-or-nosql-query::django
+        - db::sink::sql-or-nosql-query::djangoorm
+      owasp:
+        - A01:2017 - Injection
+        - A03:2021 - Injection
+      references:
+        - https://docs.djangoproject.com/en/5.0/ref/models/expressions/#raw-sql-expressions
+        - https://docs.djangoproject.com/en/5.0/topics/db/sql/
+        - https://docs.djangoproject.com/en/5.0/topics/security/#sql-injection-protection
+        - https://owasp.org/Top10/A03_2021-Injection
+      technology:
+        - django
+      license: Copyright 2023 Semgrep, Inc.
+      vulnerability_class:
+        - SQL Injection
+    languages:
+      - python
+    min-version: 1.81.0
+    patterns:
+      - pattern-either:
+          - patterns:
+              - pattern-either:
+                  - pattern: django.db.models.expressions.RawSQL("$QUERY", ...)
+                  - pattern: django.db.models.expressions.RawSQL(..., sql="$QUERY", ...)
+              - pattern-either:
+                  - pattern: django.db.models.expressions.RawSQL($ARG_1, $PARAMS, ...)
+                  - pattern: django.db.models.expressions.RawSQL(..., params=$PARAMS, ...)
+              - focus-metavariable: $QUERY
+              - metavariable-regex:
+                  metavariable: $QUERY
+                  regex: .*\'\%s\'.*
+          - patterns:
+              - pattern-either:
+                  - pattern-inside: |
+                      class $CLS:
+                        ...
+                        $MODEL: django.db.models.Model
+                        ...
+                  - pattern-inside: |
+                      class $CLS:
+                        ...
+                        $MODEL: django.db.models.Model = ...
+                        ...
+                  - pattern-inside: |
+                      class $MODEL(..., django.db.models.Model, ...):
+                        ...
+                      ...
+                  - pattern-inside: |
+                      def $FUN(..., $MODEL: django.db.models.Model, ...):
+                        ...
+                  - pattern-inside: |
+                      $MODEL: django.db.models.Model
+                      ...
+                  - pattern-inside: |
+                      $MODEL: django.db.models.Model = ...
+                      ...
+                  - pattern-inside: |
+                      if isinstance($MODEL, django.db.models.Model):
+                        ...
+                  - pattern-inside: |
+                      if isinstance($MODEL, (..., django.db.models.Model, ...)):
+                        ...
+                  - pattern-inside: |
+                      if type($MODEL) == django.db.models.Model:
+                        ...
+                  - pattern-inside: |
+                      $MODEL = django.db.models.Model(...)
+                      ...
+              - patterns:
+                  - pattern-either:
+                      - pattern: $DB.objects.raw($ARG_1, $PARAMS, ...)
+                      - pattern: $DB.objects.raw(..., params=$PARAMS, ...)
+                      - pattern: $DB.objects.extra($ARG_1, $ARG_2, $PARAMS, ...)
+                      - pattern: $DB.objects.extra(..., params=$PARAMS, ...)
+                      - pattern: $DB.objects.extra($ARG_1, $ARG_2, $ARG_3, $ARG_4, $ARG_5, $PARAMS, ...)
+                      - pattern: $DB.objects.extra(..., select_params=$PARAMS, ...)
+                  - pattern-either:
+                      - pattern: $DB.objects.raw("$QUERY", ...)
+                      - pattern: $DB.objects.raw(..., raw_query="$QUERY", ...)
+                      - pattern: $DB.objects.extra($QUERY, ...)
+                      - pattern: $DB.objects.extra(..., select=$QUERY, ...)
+                      - pattern: $DB.objects.extra($ARG_1, $QUERY, ...)
+                      - pattern: $DB.objects.extra(..., where=$QUERY, ...)
+                      - pattern: $DB.objects.extra($ARG_1, $ARG_2, $ARG_3, $QUERY, ...)
+                      - pattern: $DB.objects.extra(..., tables=$QUERY, ...)
+                      - pattern: $DB.objects.extra($ARG_1, $ARG_2, $ARG_3, $ARG_4, $QUERY, ...)
+                      - pattern: $DB.objects.extra(..., order_by=$QUERY, ...)
+                  - focus-metavariable: $QUERY
+                  - metavariable-regex:
+                      metavariable: $QUERY
+                      regex: .*\'\%s\'.*
+          - patterns:
+              - pattern-either:
+                  - pattern-inside: |
+                      $CURSOR = django.db.connection.cursor(...)
+                      ...
+                  - pattern-inside: |
+                      $CURSOR = django.db.connections[$DBNAME].cursor(...)
+                      ...
+                  - pattern-inside: |
+                      with django.db.connection.cursor(...) as $CURSOR:
+                        ...
+                  - pattern-inside: >
+                      with django.db.connections[$DBNAME].cursor(...) as
+                      $CURSOR:
+                        ...
+              - pattern-either:
+                  - pattern: $CURSOR.execute("$QUERY", ...)
+                  - pattern: $CURSOR.execute(..., sql="$QUERY", ...)
+              - pattern-either:
+                  - pattern: $CURSOR.execute($ARG_1, $PARAMS, ...)
+                  - pattern: $CURSOR.execute(..., params=$PARAMS, ...)
+              - focus-metavariable: $QUERY
+              - metavariable-regex:
+                  metavariable: $QUERY
+                  regex: .*\'\%s\'.*

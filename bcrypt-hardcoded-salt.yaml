@@ -1,0 +1,50 @@
+rules:
+  - id: bcrypt-hardcoded-salt
+    message: Hardcoded salt is used in cryptographic operations, which can result in
+      major security issues. Use salt generator that is provided by bcrypt -
+      `bcrypt.gensalt()`.
+    severity: WARNING
+    metadata:
+      likelihood: LOW
+      impact: HIGH
+      confidence: HIGH
+      category: security
+      subcategory:
+        - vuln
+      cwe:
+        - "CWE-327: Use of a Broken or Risky Cryptographic Algorithm"
+      display-name: Hard-Coded Salt in Bcrypt
+      functional-categories:
+        - crypto::search::randomness::bcrypt
+      owasp:
+        - A02:2021 - Cryptographic Failures
+        - A03:2017 - Sensitive Data Exposure
+      references:
+        - https://cryptography.io/en/latest/random-numbers/#random-number-generation
+        - https://owasp.org/Top10/A02_2021-Cryptographic_Failures
+      technology:
+        - bcrypt
+        - crypto
+        - random
+        - secrets
+      license: Copyright 2023 Semgrep, Inc.
+      vulnerability_class:
+        - Cryptographic Issues
+    languages:
+      - python
+    mode: taint
+    fix: bcrypt.gensalt()
+    options:
+      interfile: true
+      symbolic_propagation: true
+      taint_match_on: source
+    pattern-sources:
+      - pattern-either:
+          - pattern: b"..."
+          - pattern: |
+              "...".encode(...)
+    pattern-sinks:
+      - patterns:
+          - pattern-either:
+              - pattern: bcrypt.hashpw($PASS, $SALT)
+          - focus-metavariable: $SALT
