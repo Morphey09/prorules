@@ -1,0 +1,57 @@
+rules:
+  - id: integer-overflow-allocation
+    message: "`$PTR` is allocated by `$ALLOC`. The size of this allocation is
+      calculated from `$SIZE_EXPR`. If this calculation overflows then `$SINK`
+      may overflow the heap allocated buffer."
+    severity: INFO
+    metadata:
+      likelihood: LOW
+      impact: HIGH
+      confidence: LOW
+      category: security
+      subcategory:
+        - audit
+      cert:
+        - C
+        - C++
+        - L2
+        - MEM35-C
+      cwe:
+        - "CWE-680: Integer Overflow to Buffer Overflow"
+      display-name: Integer Overflow to Buffer Overflow
+      references:
+        - https://wiki.sei.cmu.edu/confluence/display/c/MEM35-C.+Allocate+sufficient+memory+for+an+object
+      technology:
+        - cpp
+      license: Copyright 2023 Semgrep, Inc.
+      vulnerability_class:
+        - Other
+    languages:
+      - cpp
+      - c
+    min-version: 1.59.0
+    patterns:
+      - pattern-either:
+          - patterns:
+              - pattern-inside: |
+                  $SIZE = $SIZE_EXPR;
+                  ...
+                  $PTR = $ALLOC(..., $SIZE, ...);
+                  ...
+              - patterns:
+                  - pattern: $SINK(..., $PTR, ..., $SUB_SIZE)
+                  - metavariable-regex:
+                      metavariable: $SINK
+                      regex: ^(bcopy|bzero|memcpy|memmove|memset)$
+              - metavariable-regex:
+                  metavariable: $ALLOC
+                  regex: ^.*alloc.*$
+              - metavariable-pattern:
+                  metavariable: $SIZE_EXPR
+                  patterns:
+                    - patterns:
+                        - pattern: <... $SUB_SIZE ...>
+                        - pattern-either:
+                            - pattern: <... $LHS + $RHS ...>
+                            - pattern: <... $LHS - $RHS ...>
+                            - pattern: <... $LHS * $RHS ...>

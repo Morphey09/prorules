@@ -1,0 +1,57 @@
+rules:
+  - id: insecure-crypto-keystorage
+    message: Key generation routines were identified where the resultant keys are
+      not stored protected by the Secure Enclave. On iOS/macOS systems,
+      cryptographic keys can be generated within the Secure Enclave - making
+      them inaccessible to the rest of the system. The keys can be used for
+      operations (signing, decryption, etc) but the private keys cannot be
+      dumped or copied - even on rooted/jailbroken systems.
+    severity: WARNING
+    metadata:
+      likelihood: LOW
+      impact: LOW
+      confidence: MEDIUM
+      category: security
+      subcategory:
+        - vuln
+      cwe:
+        - "CWE-922: Insecure Storage of Sensitive Information"
+      functional-categories:
+        - mobile::search::storage::CommonCrypto
+      masvs:
+        - "MSTG-CRYPTO-2: The app uses proven implementations ofcryptographic
+          primitives."
+      owasp:
+        - A01:2021 - Broken Access Control
+      references:
+        - https://mobile-security.gitbook.io/masvs/security-requirements/0x08-v3-cryptography_verification_requirements
+      technology:
+        - ios
+        - macos
+      license: Copyright 2023 Semgrep, Inc.
+      vulnerability_class:
+        - Mishandled Sensitive Information
+    languages:
+      - swift
+    options:
+      symbolic_propagation: true
+    patterns:
+      - pattern-either:
+          - patterns:
+              - pattern-inside: |
+                  $X = $ATTRIBS
+                  ...
+              - metavariable-pattern:
+                  metavariable: $ATTRIBS
+                  patterns:
+                    - pattern-not-regex: |
+                        .*kSecAttrTokenIDSecureEnclave.*
+              - pattern-either:
+                  - pattern: SecKeyCreateRandomKey($X, ...)
+                  - pattern: SecKeyGeneratePair($X, ...)
+              - focus-metavariable:
+                  - $X
+          - pattern: |
+              CCRSACryptorGeneratePair(...)
+          - pattern: |
+              CCRSACryptorGeneratePair!(...)

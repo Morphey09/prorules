@@ -1,0 +1,49 @@
+rules:
+  - id: keychain-passcode-fallback
+    message: The application was observed to store keychain items that leverage user
+      authentication but allow the passcode fallback. Biometric modalities are
+      considered more secure than 4 or 6 digit pincodes on iOS, and should be
+      preferred over the passcode.
+    severity: WARNING
+    metadata:
+      likelihood: LOW
+      impact: LOW
+      confidence: HIGH
+      category: security
+      subcategory:
+        - vuln
+      cwe: "CWE-272: Least Privilege Violation"
+      functional-categories:
+        - mobile::search::auth-and-biometrics::lang
+      masvs:
+        - "MASVS-AUTH-3: The app secures sensitive operations with additional
+          authentication."
+      references:
+        - https://mobile-security.gitbook.io/mobile-security-testing-guide/ios-testing-guide/0x06f-testing-local-authentication
+      technology:
+        - ios
+        - macos
+      license: Copyright 2023 Semgrep, Inc.
+      vulnerability_class:
+        - Other
+    languages:
+      - swift
+    mode: taint
+    options:
+      symbolic_propagation: true
+    pattern-sources:
+      - pattern-either:
+          - pattern: |
+              .userPresence
+          - pattern: |
+              .devicePasscode
+    pattern-sinks:
+      - patterns:
+          - pattern: |
+              SecAccessControlCreateWithFlags(
+                $ARG1, 
+                $ARG2,
+                $X,
+                $ERR)
+          - focus-metavariable:
+              - $X

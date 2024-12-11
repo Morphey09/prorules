@@ -1,0 +1,45 @@
+rules:
+  - id: ktor-development-mode-conf
+    message: The application is running debug code or has debug mode enabled. This
+      may expose sensitive information, like stack traces and environment
+      variables, to attackers. It may also modify application behavior,
+      potentially enabling attackers to bypass restrictions. To remediate this
+      finding, ensure that the application's debug code and debug mode are
+      disabled or removed from the production environment.
+    severity: INFO
+    metadata:
+      likelihood: LOW
+      impact: MEDIUM
+      confidence: HIGH
+      category: security
+      subcategory:
+        - vuln
+      cwe:
+        - "CWE-489: Active Debug Code"
+      display-name: Active Debug Code in Ktor
+      functional-categories:
+        - debug::search::active-debug-code::Ktor
+      references:
+        - https://ktor.io/docs/development-mode.html#application-conf
+      technology:
+        - ktor
+      license: Copyright 2023 Semgrep, Inc.
+      vulnerability_class:
+        - Active Debug Code
+    languages:
+      - generic
+    paths:
+      include:
+        - application.conf
+        - ktor-development-mode-conf.conf
+    patterns:
+      - patterns:
+          - pattern-inside: |
+              ktor {
+                ...
+              }
+          - pattern: development = $OPT
+          - metavariable-regex:
+              metavariable: $OPT
+              regex: "true"
+          - focus-metavariable: $OPT
