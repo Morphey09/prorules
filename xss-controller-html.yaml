@@ -1,0 +1,48 @@
+rules:
+  - id: xss-controller-html
+    message: "The application is sending dynamically generated HTML to the client
+      without escaping potentially untrusted input. This can lead to Cross-Site
+      Scripting (XSS). "
+    severity: ERROR
+    metadata:
+      likelihood: LOW
+      impact: MEDIUM
+      confidence: MEDIUM
+      category: security
+      subcategory:
+        - vuln
+      cwe:
+        - "CWE-79: Improper Neutralization of Input During Web Page Generation"
+      owasp:
+        - A03:2021 - Injection
+      references:
+        - https://owasp.org/Top10/A03_2021-Injection/
+      technology:
+        - phoenix
+      license: Copyright 2023 Semgrep, Inc.
+      vulnerability_class:
+        - Other
+    languages:
+      - elixir
+    metavariable-regex:
+      metavariable: $INPUT
+      regex: |
+        \\#\{[A-Za-z_]+\}
+    min-version: 1.55.2
+    patterns:
+      - pattern-inside: |
+          defmodule $CONTROLLER do
+            ...
+            use ..., :controller, ...
+            ...
+          end
+      - pattern: |
+          def $FUNC($CONN, $PARAMS) do
+            ...
+            html($CONN, $INPUT)
+            ...
+          end
+      - pattern-not: |
+          def $FUNC($CONN, _params) do
+          ...
+          end
