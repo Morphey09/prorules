@@ -1,0 +1,60 @@
+rules:
+  - id: taint-cookie-secure-false
+    message: Secure cookie flag is explicitly disabled. This will cause cookies to
+      be transmitted over unencrypted HTTP connections which can allow theft of
+      confidential user data such as session tokens.
+    severity: ERROR
+    metadata:
+      likelihood: MEDIUM
+      impact: MEDIUM
+      confidence: HIGH
+      category: security
+      subcategory:
+        - vuln
+      cwe:
+        - "CWE-614: Sensitive Cookie in HTTPS Session Without 'Secure' Attribute"
+      functional-categories:
+        - debug::search::active-debug-code::lang
+      owasp:
+        - A05:2021 - Security Misconfiguration
+      references:
+        - https://www.php.net/manual/en/function.setcookie.php
+        - https://www.php.net/manual/en/function.session-set-cookie-params.php
+        - https://www.php.net/manual/en/configuration.file.php
+      technology:
+        - php
+      license: Copyright 2023 Semgrep, Inc.
+      vulnerability_class:
+        - Cookie Security
+    languages:
+      - php
+    mode: taint
+    pattern-sources:
+      - patterns:
+          - pattern-either:
+              - pattern: |
+                  false
+              - pattern: |
+                  [
+                    ...,
+                    'secure' => false,
+                    ...
+                  ]
+    pattern-sinks:
+      - patterns:
+          - focus-metavariable: $SINK
+          - pattern-either:
+              - pattern: |
+                  setcookie($NAME,$VALUE,$EXPIRES,$PATH,$DOMAIN,$SINK,...)
+              - pattern: |
+                  setrawcookie($NAME,$VALUE,$EXPIRES,$PATH,$DOMAIN,$SINK,...)
+              - pattern: |
+                  set_session_cookie_params($EXPIRES,$PATH,$DOMAIN,$SINK,...)
+              - pattern: |
+                  setcookie(...,secure:$SINK)
+              - pattern: |
+                  setrawcookie(...,secure:$SINK)
+              - pattern: |
+                  set_session_cookie_params(...,secure:$SINK)
+              - pattern: |
+                  setcookie($NAME,$VALUE,$SINK)

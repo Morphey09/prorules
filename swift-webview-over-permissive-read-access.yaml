@@ -1,0 +1,42 @@
+rules:
+  - id: swift-webview-over-permissive-read-access
+    message: Webviews were observed to load content where the `allowingReadAccessTo`
+      parameter is a directory, rather than a single file. If a single file is
+      passed as a parameter, then only that single file is accessible, but
+      passing a directory, is potentially over permissive. Consider whether this
+      functionality is indeed required.
+    severity: WARNING
+    metadata:
+      likelihood: LOW
+      impact: MEDIUM
+      confidence: LOW
+      category: security
+      subcategory:
+        - audit
+      cwe:
+        - "CWE-272: Least Privilege Violation"
+      functional-categories:
+        - mobile::search::privacy-controls-and-permissions::lang
+        - mobile::source::user-input-fields::lang
+      masvs:
+        - "MASVS-PLATFORM-2: The app uses WebViews securely"
+      references:
+        - https://mas.owasp.org/MASVS/controls/MASVS-PLATFORM-2/
+      technology:
+        - ios
+        - macos
+      license: Copyright 2023 Semgrep, Inc.
+      vulnerability_class:
+        - Other
+    languages:
+      - swift
+    patterns:
+      - pattern-either:
+          - pattern: >
+              (WKWebView: $W).loadFileRequest(..., allowingReadAccessTo:
+              "$READURL")
+          - pattern: |
+              (WKWebView: $W).loadFileURL(..., allowingReadAccessTo: "$READURL")
+      - metavariable-regex:
+          metavariable: $READURL
+          regex: ^.*/$
