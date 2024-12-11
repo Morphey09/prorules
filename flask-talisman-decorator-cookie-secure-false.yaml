@@ -1,0 +1,42 @@
+rules:
+  - id: flask-talisman-decorator-cookie-secure-false
+    message: Detected a cookie where the `Secure` flag is either missing or
+      disabled. The `Secure` cookie flag instructs the browser to forbid sending
+      the cookie over an insecure HTTP request. Set the `Secure` flag to `true`
+      so the cookie will only be sent over HTTPS.
+    severity: INFO
+    metadata:
+      likelihood: LOW
+      impact: LOW
+      confidence: HIGH
+      category: security
+      subcategory:
+        - secure default
+      cwe:
+        - "CWE-614: Sensitive Cookie in HTTPS Session Without 'Secure' Attribute"
+      display-name: Cookie Without 'Secure' Attribute in flask-talisman
+      functional-categories:
+        - web::search::cookie-config::flask-talisman
+      owasp:
+        - A05:2021 - Security Misconfiguration
+      references:
+        - https://owasp.org/Top10/A05_2021-Security_Misconfiguration
+      technology:
+        - cookie
+        - flask
+        - flask-talisman
+      license: Copyright 2023 Semgrep, Inc.
+      vulnerability_class:
+        - Cookie Security
+    languages:
+      - python
+    fix: "True"
+    options:
+      symbolic_propagation: true
+    patterns:
+      - patterns:
+          - pattern: "@$TALISMAN(..., session_cookie_secure=$FALSE, ...)"
+          - metavariable-regex:
+              metavariable: $FALSE
+              regex: ^(False)$
+          - focus-metavariable: $FALSE

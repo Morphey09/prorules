@@ -1,0 +1,88 @@
+rules:
+  - id: flask-cookie-app-config-httponly-false
+    message: Detected a cookie where the `HttpOnly` flag is either missing or
+      disabled. The `HttpOnly` cookie flag instructs the browser to forbid
+      client-side JavaScript to read the cookie. If JavaScript interaction is
+      required, you can ignore this finding. However, set the `HttpOnly` flag to
+      `true` in all other cases. If this wasn't intentional, it's recommended to
+      set the HttpOnly flag to true so the cookie will not be accessible through
+      client-side scripts. This approach ensures session cookies are secure by
+      default. It is also possible to use the flask-talisman extension to
+      enforce a secure configuration.
+    severity: INFO
+    metadata:
+      likelihood: LOW
+      impact: LOW
+      confidence: HIGH
+      category: security
+      subcategory:
+        - secure default
+      cwe:
+        - "CWE-1004: Sensitive Cookie Without 'HttpOnly' Flag"
+      display-name: Missing HttpOnly Flag in Cookie
+      functional-categories:
+        - web::search::cookie-config::flask
+        - web::search::cookie-config::flask-jwt-extended
+        - web::search::cookie-config::flask-login
+        - web::search::cookie-config::flask-session
+      owasp:
+        - A05:2021 - Security Misconfiguration
+      references:
+        - https://owasp.org/Top10/A05_2021-Security_Misconfiguration
+      technology:
+        - cookie
+        - cookies
+        - flask
+        - web
+      license: Copyright 2023 Semgrep, Inc.
+      vulnerability_class:
+        - Cookie Security
+    languages:
+      - python
+    fix: "True"
+    options:
+      symbolic_propagation: true
+    patterns:
+      - patterns:
+          - pattern-either:
+              - pattern: $APP.config["$SESSION_COOKIE_HTTPONLY"] = $FALSE
+              - pattern: $APP.config.$SESSION_COOKIE_HTTPONLY = $FALSE
+              - patterns:
+                  - pattern: |
+                      $APP.config.$UPDATE(
+                        ...,
+                        $SESSION_COOKIE_HTTPONLY = $FALSE,
+                        ...
+                      )
+                  - pattern-not-inside: |
+                      $APP.config.$UPDATE(
+                          ...,
+                          TESTING=True,
+                          ...
+                      )
+                  - pattern-not-inside: |
+                      $APP.config.$UPDATE(
+                          ...,
+                          DEBUG=True,
+                          ...
+                      )
+                  - metavariable-regex:
+                      metavariable: $UPDATE
+                      regex: ^(update|from_mapping)$
+              - pattern: |
+                  $OBJ = $CLASS()
+                  ...
+                  $OBJ.$SESSION_COOKIE_HTTPONLY = $FALSE
+                  ...
+                  $APP.config.from_object($OBJ, ...)
+              - pattern: |
+                  $SESSION_COOKIE_HTTPONLY = $FALSE
+                  ...
+                  $APP.config.from_object(__name__)
+          - metavariable-regex:
+              metavariable: $SESSION_COOKIE_HTTPONLY
+              regex: ^(SESSION|REMEMBER)_COOKIE_HTTPONLY$
+          - metavariable-regex:
+              metavariable: $FALSE
+              regex: ^(False)$
+          - focus-metavariable: $FALSE
