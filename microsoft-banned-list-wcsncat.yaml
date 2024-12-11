@@ -1,0 +1,27 @@
+rules:
+  - id: microsoft-banned-list-wcsncat
+    message: "wcsncat is a banned function: limited error detection. Alternatives
+      are wcsncat_s, wcslcat"
+    severity: INFO
+    metadata:
+      likelihood: LOW
+      impact: MEDIUM
+      confidence: LOW
+      category: security
+      subcategory:
+        - audit
+      cwe:
+        - "CWE-477: Use of Obsolete Function"
+      display-name: Use of Obsolete Function
+      references:
+        - https://learn.microsoft.com/en-us/windows-hardware/drivers/devtest/28719-banned-api-usage-use-updated-function-replacement
+      technology:
+        - cpp
+      license: Copyright 2023 Semgrep, Inc.
+      vulnerability_class:
+        - Dangerous Method or Function
+    languages:
+      - cpp
+      - c
+    min-version: 1.59.0
+    pattern: wcsncat(...)
