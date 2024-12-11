@@ -1,0 +1,32 @@
+rules:
+  - id: search-laravel-form-csrf
+    message: This rule has been deprecated.
+    severity: WARNING
+    metadata:
+      likelihood: LOW
+      impact: LOW
+      confidence: LOW
+      category: security
+      subcategory:
+        - audit
+      cwe:
+        - "CWE-352: Cross-Site Request Forgery (CSRF)"
+      owasp:
+        - A01:2021 - Broken Access Control
+      references:
+        - https://laravel.com/docs/9.x/csrf
+      technology:
+        - php
+        - laravel
+        - blade
+      license: Copyright 2023 Semgrep, Inc.
+      vulnerability_class:
+        - Cross-Site Request Forgery (CSRF)
+    languages:
+      - generic
+    paths:
+      include:
+        - "*.blade.php"
+    patterns:
+      - pattern: a()
+      - pattern: b()

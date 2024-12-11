@@ -1,0 +1,52 @@
+rules:
+  - id: rce-eex
+    message: "Untrusted input might be injected into a evaluation statement executed
+      by the application, which can lead to a remote code execution. An attacker
+      can execute arbitrary Elixir code, potentially gaining complete control of
+      the system. To prevent this vulnerability, avoid evaluating Elixir code
+      with user input through the `EEx.eval_*` functions. If this is
+      unavoidable, validate and sanitize the input, and use safe methods for
+      executing the commands. "
+    severity: WARNING
+    metadata:
+      likelihood: LOW
+      impact: HIGH
+      confidence: LOW
+      category: security
+      subcategory:
+        - vuln
+      cwe:
+        - "CWE-94: Improper Control of Generation of Code ('Code Injection')"
+      owasp:
+        - A03:2021 - Injection
+      references:
+        - https://owasp.org/Top10/A03_2021-Injection/
+      technology:
+        - elixir
+      license: Copyright 2023 Semgrep, Inc.
+      vulnerability_class:
+        - Code Injection
+    languages:
+      - elixir
+    min-version: 1.59.0
+    patterns:
+      - pattern-either:
+          - patterns:
+              - pattern: |
+                  EEx.$FUNC($INPUT)
+              - pattern-not: |
+                  EEx.$FUNC("...")
+          - patterns:
+              - pattern: |
+                  EEx.$FUNC("...", ..., $ARG : $INPUT, ...)
+              - metavariable-pattern:
+                  metavariable: $INPUT
+                  patterns:
+                    - pattern: |
+                        $X
+                    - pattern-not: |
+                        "..."
+      - focus-metavariable: $INPUT
+      - metavariable-regex:
+          metavariable: $FUNC
+          regex: ^(eval_string|eval_file)$
