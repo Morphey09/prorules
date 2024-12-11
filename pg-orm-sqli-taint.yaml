@@ -1,0 +1,35 @@
+rules:
+  - id: pg-orm-sqli-taint
+    message: This rule has been deprecated. Please remove it from your policies and
+      rulepacks.
+    severity: ERROR
+    metadata:
+      likelihood: HIGH
+      impact: HIGH
+      confidence: MEDIUM
+      category: security
+      subcategory:
+        - vuln
+      cwe:
+        - "CWE-89: Improper Neutralization of Special Elements used in an SQL
+          Command ('SQL Injection')"
+      cwe2021-top25: true
+      cwe2022-top25: true
+      owasp:
+        - A01:2017 - Injection
+        - A03:2021 - Injection
+      references:
+        - https://pg.uptrace.dev/queries/
+      technology:
+        - go
+        - pg
+        - go-pg
+        - go-net/http
+      license: Copyright 2023 Semgrep, Inc.
+      vulnerability_class:
+        - SQL Injection
+    languages:
+      - go
+    patterns:
+      - pattern: a
+      - pattern: b

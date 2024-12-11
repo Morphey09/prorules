@@ -1,0 +1,47 @@
+rules:
+  - id: pycryptodome-sha1-or-ripemd160
+    message: Detected $ALG hash algorithm which is considered insecure. Use a modern
+      hash algorithm from the SHA-2, SHA-3, or BLAKE2 family instead.
+    severity: WARNING
+    metadata:
+      likelihood: LOW
+      impact: HIGH
+      confidence: HIGH
+      category: security
+      subcategory:
+        - vuln
+      cwe:
+        - "CWE-327: Use of a Broken or Risky Cryptographic Algorithm"
+      display-name: Risky Cryptographic Algorithm in Pycryptodome
+      functional-categories:
+        - crypto::search::hash-algorithm::pycryptodome
+        - crypto::search::hash-algorithm::pycryptodomex
+      owasp:
+        - A02:2021 - Cryptographic Failures
+        - A03:2017 - Sensitive Data Exposure
+      references:
+        - https://owasp.org/Top10/A02_2021-Cryptographic_Failures
+        - https://owasp.org/www-project-web-security-testing-guide/stable/4-Web_Application_Security_Testing/09-Testing_for_Weak_Cryptography/04-Testing_for_Weak_Encryption
+        - https://www.pycryptodome.org/src/hash/hash#modern-hash-algorithms
+        - https://www.pycryptodome.org/src/hash/ripemd160
+        - https://www.pycryptodome.org/src/hash/sha1
+        - https://www.trendmicro.com/vinfo/us/security/news/vulnerabilities-and-exploits/sha-1-collision-signals-the-end-of-the-algorithm-s-viability
+      technology:
+        - crypto
+        - cryptography
+        - cryptography.hazmat
+      license: Copyright 2023 Semgrep, Inc.
+      vulnerability_class:
+        - Cryptographic Issues
+    languages:
+      - python
+    fix: SHA3_512
+    options:
+      symbolic_propagation: true
+    patterns:
+      - pattern-either:
+          - pattern: Crypto.Hash.$ALG.new(...)
+      - metavariable-regex:
+          metavariable: $ALG
+          regex: ^(SHA1|RIPEMD160)$
+      - focus-metavariable: $ALG

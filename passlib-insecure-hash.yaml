@@ -1,0 +1,59 @@
+rules:
+  - id: passlib-insecure-hash
+    message: This hashing algorithm is insecure. If this hash is used in a security
+      context, such as password hashing, it should be converted to a stronger
+      hashing algorithm.
+    severity: INFO
+    metadata:
+      likelihood: LOW
+      impact: MEDIUM
+      confidence: HIGH
+      category: security
+      subcategory:
+        - vuln
+      cwe:
+        - "CWE-328: Use of Weak Hash"
+      display-name: Use of Weak Hash in Passlib
+      functional-categories:
+        - crypto::search::hash-algorithm::passlib
+      owasp:
+        - A02:2021 - Cryptographic Failures
+        - A03:2017 - Sensitive Data Exposure
+      references:
+        - https://owasp.org/Top10/A02_2021-Cryptographic_Failures
+        - https://owasp.org/www-project-web-security-testing-guide/stable/4-Web_Application_Security_Testing/09-Testing_for_Weak_Cryptography/04-Testing_for_Weak_Encryption
+      technology:
+        - crypto
+        - cryptography
+        - passlib
+      license: Copyright 2023 Semgrep, Inc.
+      vulnerability_class:
+        - Insecure Hashing Algorithm
+    languages:
+      - python
+    options:
+      symbolic_propagation: true
+    patterns:
+      - pattern-either:
+          - pattern: passlib.hash.bsd_nthash.hash(...)
+          - pattern: passlib.hash.bsd_nthash.encrypt(...)
+          - pattern: passlib.hash.md5_crypt.hash(...)
+          - pattern: passlib.hash.md5_crypt.encrypt(...)
+          - pattern: passlib.hash.sha1_crypt.hash(...)
+          - pattern: passlib.hash.sha1_crypt.encrypt(...)
+          - pattern: passlib.hash.sun_md5_crypt.hash(...)
+          - pattern: passlib.hash.sun_md5_crypt.encrypt(...)
+          - pattern: passlib.hash.des_crypt.hash(...)
+          - pattern: passlib.hash.des_crypt.encrypt(...)
+          - pattern: passlib.hash.bsdi_crypt.hash(...)
+          - pattern: passlib.hash.bsdi_crypt.encrypt(...)
+          - pattern: passlib.hash.bigcrypt.hash(...)
+          - pattern: passlib.hash.bigcrypt.encrypt(...)
+          - pattern: passlib.hash.crypt16.hash(...)
+          - pattern: passlib.hash.crypt16.encrypt(...)
+          - pattern: passlib.hash.apr_md5_crypt.hash(...)
+          - pattern: passlib.hash.apr_md5_crypt.encrypt(...)
+          - pattern: passlib.hash.cta_pbkdf2_sha1.hash(...)
+          - pattern: passlib.hash.cta_pbkdf2_sha1.encrypt(...)
+          - pattern: passlib.hash.dlitz_pbkdf2_sha1.hash(...)
+          - pattern: passlib.hash.dlitz_pbkdf2_sha1.encrypt(...)

@@ -1,0 +1,34 @@
+rules:
+  - id: print-stack-trace
+    message: Possible active debug code detected. Deploying an application with
+      debug code can create unintended entry points or expose sensitive
+      information.
+    severity: INFO
+    metadata:
+      likelihood: LOW
+      impact: MEDIUM
+      confidence: LOW
+      category: security
+      subcategory:
+        - audit
+      cwe:
+        - "CWE-489: Active Debug Code"
+      functional-categories:
+        - debug::search::active-debug-code::runtime/debug
+      owasp:
+        - A06:2017 - Security Misconfiguration
+        - A05:2021 - Security Misconfiguration
+      references:
+        - https://pkg.go.dev/runtime/debug#PrintStack
+      technology:
+        - go
+      license: Copyright 2023 Semgrep, Inc.
+      vulnerability_class:
+        - Active Debug Code
+    languages:
+      - go
+    patterns:
+      - pattern-inside: |
+          import "runtime/debug"
+          ...
+      - pattern: debug.PrintStack()
