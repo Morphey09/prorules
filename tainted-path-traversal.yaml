@@ -1,0 +1,50 @@
+rules:
+  - id: tainted-path-traversal
+    message: Detected user input going into a php include or require command, which
+      can lead to path traversal and sensitive data being exposed. These
+      commands can also lead to code execution. Instead, allowlist files that
+      the user can access or rigorously validate user input.
+    severity: ERROR
+    metadata:
+      likelihood: MEDIUM
+      impact: MEDIUM
+      confidence: HIGH
+      category: security
+      subcategory:
+        - vuln
+      cwe:
+        - "CWE-23: Relative Path Traversal"
+      functional-categories:
+        - web::source::cookie::lang
+        - web::source::http-params::lang
+        - web::source::http-body::lang
+        - web::source::url-path-params::lang
+        - file::sink::file-access::lang
+      owasp:
+        - A01:2021 - Broken Access Control
+      references:
+        - https://medium.com/@emmapinheiro42/php-include-ignore-4a3ba81371af
+        - https://www.acunetix.com/websitesecurity/php-security-2/
+      technology:
+        - php
+      license: Copyright 2023 Semgrep, Inc.
+      vulnerability_class:
+        - Path Traversal
+    languages:
+      - php
+    mode: taint
+    pattern-sources:
+      - patterns:
+          - pattern-either:
+              - pattern: $_REQUEST
+              - pattern: $_GET
+              - pattern: $_POST
+              - pattern: $_FILES
+              - pattern: $_COOKIE
+    pattern-sinks:
+      - patterns:
+          - pattern-either:
+              - pattern: include(...);
+              - pattern: include_once(...);
+              - pattern: require(...);
+              - pattern: require_once(...);
